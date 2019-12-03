@@ -13,6 +13,9 @@ RUN . ./libcomponent.sh && component_unpack "python" "3.6.9-3" --checksum c4d454
 RUN . ./libcomponent.sh && component_unpack "java" "1.8.232-0" --checksum f4e5ff1d4fb13baf9bb2a4f2e5ffb328cf9eeb26d0b91214196e4473c2874adc
 RUN . ./libcomponent.sh && component_unpack "spark" "2.4.4-1" --checksum c1cd12976aea9700ffb19413f478946982bcd0e350b71729c914813dd0671440
 RUN curl --silent -L https://github.com/tianon/gosu/releases/download/1.11/gosu-amd64 > /usr/local/bin/gosu && echo 0b843df6d86e270c5b0f5cbd3c326a04e18f4b7f9b8457fa497b0454c4b138d7 /usr/local/bin/gosu | sha256sum --check && chmod u+x /usr/local/bin/gosu && mkdir -p /opt/bitnami/licenses && curl --silent -L https://raw.githubusercontent.com/tianon/gosu/master/LICENSE > /opt/bitnami/licenses/gosu-1.11.txt
+RUN /opt/bitnami/python/bin/python3 -m pip install pyspark pyarrow koalas azure-storage
+RUN apt-get update
+RUN apt-get install -y wget
 
 COPY rootfs /
 RUN /postunpack.sh
@@ -23,6 +26,13 @@ ENV BITNAMI_APP_NAME="spark" \
     NSS_WRAPPER_PASSWD="/opt/bitnami/spark/tmp/nss_passwd" \
     PATH="/opt/bitnami/python/bin:/opt/bitnami/java/bin:/opt/bitnami/spark/bin:/opt/bitnami/spark/sbin:$PATH" \
     SPARK_HOME="/opt/bitnami/spark"
+
+RUN cd /opt/bitnami/python/lib/python3.6/site-packages/pyspark/jars
+RUN wget -O /opt/bitnami/python/lib/python3.6/site-packages/pyspark/jars/azure-storage-8.4.0.jar http://central.maven.org/maven2/com/microsoft/azure/azure-storage/8.4.0/azure-storage-8.4.0.jar
+RUN wget -O /opt/bitnami/python/lib/python3.6/site-packages/pyspark/jars/hadoop-azure-3.2.1.jar http://central.maven.org/maven2/org/apache/hadoop/hadoop-azure/3.2.1/hadoop-azure-3.2.1.jar
+COPY data /opt/data
+
+
 
 WORKDIR /opt/bitnami/spark
 USER 1001
